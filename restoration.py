@@ -4,7 +4,7 @@
 """
 
 import math
-from compression import normalize_audio
+from compression_ import normalize_audio
 
 
 def cubic_interpolate(p0, p1, p2, p3, t):

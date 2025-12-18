@@ -4,7 +4,7 @@
 """
 
 from audio_io import read_wav, write_wav
-from compression import compress_audio, save_compressed, load_compressed
+from compression_ import compress_audio, save_compressed, load_compressed
 from restoration import restore_audio
 
 
