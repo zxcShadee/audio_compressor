@@ -108,6 +108,7 @@ def compress_audio(data, rate):
         "data": quantized
     }
 
+
 def save_compressed(obj, path):
     """Сохраняет сжатые данные в бинарный файл"""
     with open(path, "wb") as f:
