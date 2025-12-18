@@ -4,15 +4,15 @@
 
 import struct
 
-def normalize_audio(data, target_rms=0.03):
+def normalize_audio(data, target_rms=0.07):
+    """Нормализуем среднюю квадратичную громкость аудио"""
     try:
         if not data:
             return data
 
         sum_sq = sum(x*x for x in data)
         if sum_sq == 0:
-            return data  # Тихий сигнал
-
+            return data
         rms = (sum_sq / len(data)) ** 0.5
 
         if rms < 0.0001:
