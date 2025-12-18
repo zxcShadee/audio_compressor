@@ -7,9 +7,8 @@ from restoration import cubic_interpolate, upsample, de_emphasis, spectral_copy
 import math
 
 
-# ============================================================================
-# ТЕСТЫ ДЛЯ МОДУЛЯ СЖАТИЯ
-# ============================================================================
+# Тесты для сжатия
+
 
 def test_normalize_audio_simple():
     """Тест нормализации аудио"""
@@ -57,7 +56,7 @@ def test_compress_audio_simple():
     assert len(result["data"]) > 0
 
 
-# ТЕСТЫ ДЛЯ МОДУЛЯ ВОССТАНОВЛЕНИЯ
+# Тесты для восстановления
 
 def test_cubic_interpolate_middle():
     """Тест кубической интерполяции в середине"""
