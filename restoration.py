@@ -7,11 +7,11 @@ import math
 from compression_ import normalize_audio
 
 
-def cubic_interpolate(p0, p1, p2, p3, t):
+def cubic_interpolate(p0, p1, p2, p3, t, tau=0.5):
     """Кубическая интерполяция"""
-    a = (-0.5*p0) + (1.5*p1) - (1.5*p2) + (0.5*p3)
-    b = p0 - (2.5*p1) + (2*p2) - (0.5*p3)
-    c = (-0.5*p0) + (0.5*p2)
+    a = (-tau * p0) + (2 - tau) * p1 + (tau - 2) * p2 + (tau * p3)
+    b = (2 * tau * p0) + (tau - 3) * p1 + (3 - 2 * tau) * p2 + (-tau * p3)
+    c = (-tau * p0) + (tau * p2)
     d = p1
     return a*t**3 + b*t**2 + c*t + d
 
@@ -28,8 +28,7 @@ def upsample(data, factor):
             result.append(data[i])
             for j in range(1, factor):
                 t = j / factor
-                result.append(cubic_interpolate(
-                    data[i], data[i+1], data[i+2], data[i+3], t))
+                result.append(cubic_interpolate(data[i], data[i+1], data[i+2], data[i+3], t))
         return result
     except IndexError:
         raise ValueError("Индекс вне диапазона при интерполяции")
