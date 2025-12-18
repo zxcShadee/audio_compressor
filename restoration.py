@@ -17,16 +17,24 @@ def cubic_interpolate(p0, p1, p2, p3, t):
 
 
 def upsample(data, factor):
-    """Восстанавливает частоту дискретизации"""
-    result = []
-    for i in range(len(data) - 3):
-        result.append(data[i])
-        for j in range(1, factor):
-            t = j / factor
-            result.append(cubic_interpolate(
-                data[i], data[i+1], data[i+2], data[i+3], t))
-    return result
+    try:
+        if factor <= 0:
+            raise ValueError(f"Неверный коэффициент интерполяции: {factor}")
+        if len(data) < 4:
+            raise ValueError("Недостаточно данных для интерполяции (нужно минимум 4 точки)")
 
+        result = []
+        for i in range(len(data) - 3):
+            result.append(data[i])
+            for j in range(1, factor):
+                t = j / factor
+                result.append(cubic_interpolate(
+                    data[i], data[i+1], data[i+2], data[i+3], t))
+        return result
+    except IndexError:
+        raise ValueError("Индекс вне диапазона при интерполяции")
+    except Exception as e:
+        raise RuntimeError(f"Ошибка интерполяции аудио: {str(e)}")
 
 def fft(signal):
     """Рекурсивная реализация БПФ"""
@@ -52,19 +60,28 @@ def ifft(freq):
 
 
 def spectral_copy(data):
-    """Спектральное копирование высоких частот"""
-    n = len(data)
-    padded = data + [0.0] * (2**math.ceil(math.log2(n)) - n)
-    spectrum = fft(padded)
+    try:
+        if not data:
+            return data
 
-    half = len(spectrum) // 2
-    for i in range(half // 2, half):
-        spectrum[i] *= 0.5
-        spectrum[i + half] = spectrum[i].conjugate()
+        n = len(data)
+        if n == 0:
+            return data
 
-    restored = ifft(spectrum)
-    return restored[:n]
+        padded = data + [0.0] * (2**math.ceil(math.log2(n)) - n)
+        spectrum = fft(padded)
 
+        half = len(spectrum) // 2
+        for i in range(half // 2, half):
+            spectrum[i] *= 0.5
+            spectrum[i + half] = spectrum[i].conjugate()
+
+        restored = ifft(spectrum)
+        return restored[:n]
+    except ValueError as e:
+        raise ValueError(f"Ошибка в данных для спектрального копирования: {str(e)}")
+    except Exception as e:
+        raise RuntimeError(f"Ошибка спектрального копирования: {str(e)}")
 
 def de_emphasis(data, coeff=0.95):
     """
@@ -114,15 +131,6 @@ def restore_audio(obj):
         TypeError: Если "data" не является списком или "factor"/"rate" не целые числа.
         ValueError: Если "factor" или "rate" не положительные числа.
         ZeroDivisionError: Если "factor" равен нулю.
-
-    Algorithm Steps:
-        1. Upsampling: Повышение частоты дискретизации в factor раз с помощью
-           кубической интерполяции Catmull-Rom.
-        2. Spectral Copy: Восстановление высокочастотных компонентов через
-           операцию в частотной области с использованием FFT.
-        3. De-emphasis: Обратное предварительное усиление для восстановления
-           исходного частотного баланса (инвертирует pre-emphasis).
-        4. Normalization: Нормализация уровня громкости до целевого RMS=0.03.
         """
     factor = obj["factor"]
 

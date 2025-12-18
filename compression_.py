@@ -4,21 +4,26 @@
 
 import struct
 
-
 def normalize_audio(data, target_rms=0.03):
-    """Нормализация громкости аудио сигнала"""
-    if not data:
-        return data
+    try:
+        if not data:
+            return data
 
-    sum_sq = sum(x*x for x in data)
-    rms = (sum_sq / len(data)) ** 0.5
+        sum_sq = sum(x*x for x in data)
+        if sum_sq == 0:
+            return data  # Тихий сигнал
 
-    if rms < 0.0001:
-        return data
+        rms = (sum_sq / len(data)) ** 0.5
 
-    factor = min(target_rms / rms, 20.0)
-    return [x * factor for x in data]
+        if rms < 0.0001:
+            return data
 
+        factor = min(target_rms / rms, 20.0)
+        return [x * factor for x in data]
+    except ZeroDivisionError:
+        raise ValueError("Пустые аудиоданные для нормализации")
+    except Exception as e:
+        raise RuntimeError(f"Ошибка нормализации аудио: {str(e)}")
 
 def pre_emphasis(data, coeff=0.95):
     """Предварительное усиление высоких частот"""
@@ -29,27 +34,41 @@ def pre_emphasis(data, coeff=0.95):
 
 
 def adaptive_downsample(data, factor):
-    """Адаптивное понижение частоты дискретизации"""
-    result = []
-    i = 0
-    while i < len(data):
-        result.append(data[i])
-        if i + 1 < len(data) and abs(data[i] - data[i + 1]) > 0.3:
-            i += 1
-        else:
-            i += factor
-    return result
+    try:
+        if factor <= 0:
+            raise ValueError(f"Неверный коэффициент сжатия: {factor}")
+
+        result = []
+        i = 0
+        while i < len(data):
+            result.append(data[i])
+            if i + 1 < len(data) and abs(data[i] - data[i + 1]) > 0.3:
+                i += 1
+            else:
+                i += factor
+        return result
+    except IndexError:
+        raise ValueError("Некорректные данные для децимации")
+    except Exception as e:
+        raise RuntimeError(f"Ошибка децимации аудио: {str(e)}")
 
 
 def reduce_bit_depth(data, bits):
-    """Уменьшает битность сигнала"""
-    max_val = 2 ** (bits - 1) - 1
-    result = []
-    for x in data:
-        x = max(min(x, 1.0), -1.0)
-        result.append(int(round(x * max_val)))
-    return result
+    try:
+        if bits <= 0 or bits > 32:
+            raise ValueError(f"Неверная битность: {bits}")
 
+        max_val = 2 ** (bits - 1) - 1
+        result = []
+        for x in data:
+            try:
+                x = max(min(x, 1.0), -1.0)
+                result.append(int(round(x * max_val)))
+            except (ValueError, TypeError):
+                raise ValueError(f"Некорректное значение аудиоданных: {x}")
+        return result
+    except Exception as e:
+        raise RuntimeError(f"Ошибка квантования аудио: {str(e)}")
 
 def compress_audio(data, rate):
     """
@@ -59,7 +78,7 @@ def compress_audio(data, rate):
     адаптивное понижение частоты дискретизации и квантование.
 
     Args:
-        data (list | numpy.ndarray): Исходные аудиоданные.
+        data (list): Исходные аудиоданные.
         rate (int): Исходная частота дискретизации в герцах (Гц).
 
     Returns:
