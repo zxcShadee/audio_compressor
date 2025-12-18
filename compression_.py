@@ -107,22 +107,6 @@ def compress_audio(data, rate):
         "factor": factor,
         "data": quantized
     }
-    factor = 2
-    bits = 8
-
-    mono = [sum(x) / len(x) if hasattr(x, '__len__') else x for x in data]
-    mono = normalize_audio(mono)
-    emphasized = pre_emphasis(mono)
-    down = adaptive_downsample(emphasized, factor)
-    quantized = reduce_bit_depth(down, bits)
-
-    return {
-        "rate": rate // factor,
-        "bits": bits,
-        "factor": factor,
-        "data": quantized
-    }
-
 
 def save_compressed(obj, path):
     """Сохраняет сжатые данные в бинарный файл"""

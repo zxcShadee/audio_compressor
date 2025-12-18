@@ -133,13 +133,9 @@ def restore_audio(obj):
         ZeroDivisionError: Если "factor" равен нулю.
         """
     factor = obj["factor"]
-
     up = upsample(obj["data"], factor)
-
     restored = spectral_copy(up)
-
     restored = de_emphasis(restored)
-
     restored = normalize_audio(restored)
 
     return restored, obj["rate"] * factor
