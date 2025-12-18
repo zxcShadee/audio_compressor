@@ -4,7 +4,7 @@
 """
 
 import math
-from compression import normalize_audio  
+from compression import normalize_audio
 
 
 def cubic_interpolate(p0, p1, p2, p3, t):
@@ -23,7 +23,8 @@ def upsample(data, factor):
         result.append(data[i])
         for j in range(1, factor):
             t = j / factor
-            result.append(cubic_interpolate(data[i], data[i+1], data[i+2], data[i+3], t))
+            result.append(cubic_interpolate(
+                data[i], data[i+1], data[i+2], data[i+3], t))
     return result
 
 
@@ -72,11 +73,11 @@ def de_emphasis(data, coeff=0.95):
     """
     if not data:
         return data
-    
+
     result = [data[0]]
     for i in range(1, len(data)):
         result.append(data[i] + coeff * result[i - 1])
-    
+
     return result
 
 
@@ -124,13 +125,13 @@ def restore_audio(obj):
         4. Normalization: Нормализация уровня громкости до целевого RMS=0.03.
         """
     factor = obj["factor"]
-    
+
     up = upsample(obj["data"], factor)
-    
+
     restored = spectral_copy(up)
-    
+
     restored = de_emphasis(restored)
-    
+
     restored = normalize_audio(restored)
-    
+
     return restored, obj["rate"] * factor

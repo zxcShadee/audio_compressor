@@ -4,19 +4,21 @@
 
 import struct
 
+
 def normalize_audio(data, target_rms=0.03):
     """Нормализация громкости аудио сигнала"""
     if not data:
         return data
-    
+
     sum_sq = sum(x*x for x in data)
     rms = (sum_sq / len(data)) ** 0.5
-    
+
     if rms < 0.0001:
         return data
-    
+
     factor = min(target_rms / rms, 20.0)
     return [x * factor for x in data]
+
 
 def pre_emphasis(data, coeff=0.95):
     """Предварительное усиление высоких частот"""
